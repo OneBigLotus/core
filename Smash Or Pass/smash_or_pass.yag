@@ -1,0 +1,130 @@
+{{$sReact := false}}
+{{$sEmojis := cslice "smash:994783560663830549" "pass:994783627995005078"}}
+{{$cReact := false}}
+{{$cEmojis := cslice "🤍" "🤎" "💚" "💛" "💙" "❤️" "🖤" "💚" "💜" "🧡"}}
+{{$message := ""}}
+{{$attached := false}}
+{{$linked := false}}
+{{$blacklist := false}}
+{{$ignoreEmbed := false}}
+{{$repair := false}}
+{{$linkCompare := false}}
+{{$maxArgs := 11}}
+{{$minArgs := 2}}
+{{$fileRegex := `(?i)\.(jpg|jpeg|png|gif|tif|webp|mp4|webm|mov)\z`}}
+{{$linkRegex := `((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)`}}
+
+{{define "blacklist"}}
+    {{$embed := cembed 
+    "title" (print "❯ Hey " .  ", Your Post Has Been Blacklisted And Will Not Be Voted On")
+    }}
+    {{$x := sendMessageRetID nil $embed}}
+    {{deleteMessage nil $x 5}}
+{{end}}
+
+{{define "repairSuccess"}}
+    {{$failEmbed := cembed 
+    "title" (print "❯ Successfully Deleted " . "'s Vote")}}
+    {{$x := sendMessageRetID nil $failEmbed}}
+    {{deleteTrigger 1}}
+    {{deleteMessage nil $x 10}}
+{{end}}
+
+{{define "sendError"}}
+    {{$failEmbed := cembed 
+    "title" (print "❯ Oops " . ", Your post was not correctly formatted")
+    "color" 4645612 
+    "fields" (cslice  
+    (sdict "name" "To Enable Voting" "value"  "Upload or link an attachment. To get added to yiff-of-the-week your post must earn 25 or more smashes." "inline" false)
+    (sdict "name" "To Blacklist Post From Vote" "value"  "flag with -s" "inline" false)
+    (sdict "name" "To Start A Comparison" "value"  "Flag an uploaded or linked attachment with -c followed with up to 5 options" "inline" false)
+    (sdict "name" "Example A" "value"  "-c \"Left Character\" \"Right Character\"" "inline" true)
+    (sdict "name" "Example B" "value"  "-c examplelink.jpg Left Right" "inline" true)
+    )}}
+    {{$x := sendMessageRetID nil $failEmbed}}
+    {{deleteTrigger (1)}}
+    {{deleteMessage nil $x 20}} 
+{{end}}
+
+{{/*Detect Terms*/}} 
+{{if (and (reFindAll `^(-f\b)` .Message.Content) (.Message.ReferencedMessage))}} {{/*user wants to repair*/}}
+{{$cReact = false}}{{$sReact = false}}{{$repair = true}}{{$target := .Message.ReferencedMessage.ID}}{{$m1 := getMessage nil $target}}
+    {{if (or (eq (.Message.Author.ID) ($m1.ReferencedMessage.Author.ID)) (in (split (index (split (exec "viewperms") "\n") 2) ", ") "ManageServer"))}}
+                {{deleteMessage nil $m1.ReferencedMessage.ID 1}}
+                {{deleteMessage nil .Message.ReferencedMessage.ID 1}}
+                {{$sucess := execTemplate "repairSuccess" .User.Username}} 
+        {{end}}
+    {{else if (reFindAll `^(-f\b)` .Message.Content)}}
+        {{$repair = true}}
+        {{$template := execTemplate "sendError" .User.Username}}
+    {{end}}
+
+{{if not (eq $linked true)}}
+    {{range .Message.Attachments}}
+        {{if (reFind $fileRegex .Filename)}}
+        {{$linked = false}}
+        {{$attached = true}}
+        {{$sReact = true}}
+        {{end}}
+        {{end}}
+    {{end}}
+
+{{/*Embed Media*/}}
+{{if not (reFind `^(-clear )` .Message.Content)}}
+{{if and (not $ignoreEmbed) (not $repair) (not (reFindAll `tenor|giphy|imgflip|gifer` .Message.Content))}}
+{{$emb := .Message.Embeds}}
+{{range (seq 0 3)}}{{if not ($emb = (getMessage nil $.Message.ID).Embeds)}}{{sleep 1}}{{end}}{{end}}
+    {{range $emb}}
+        {{if .Thumbnail}}
+        {{$linked = true}}
+        {{$attached = false}}
+        {{$sReact = true}}
+            {{end}}
+        {{end}}
+{{end}}
+{{end}}
+
+{{if and (reFindAll `^(-s\b)` .Message.Content) }} {{/*User wants no reactions*/}}
+    {{$blacklist = true}}
+    {{if (or ($linked) ($attached))}}
+    {{$x := execTemplate "blacklist" .User.Username}}
+    {{end}}
+{{end}}
+
+{{if (reFindAll `^(-c\b)` .Message.Content)}} {{/*user wants to compare*/}}
+    {{$cReact = true}} 
+    {{if (gt (len .Args) $minArgs)}}
+    {{if and (reFind $linkRegex (index .Args 1)) (not (reFind $linkRegex (joinStr " " (slice .Args 2))))}}
+        {{$linkCompare = true}}
+        {{$maxArgs = 12}}
+        {{$minArgs = 3}}
+        {{end}}
+    {{end}}
+{{end}}
+{{if not .Message.ReferencedMessage}}
+{{if and (le (len .Args) $maxArgs) (gt (len .Args) $minArgs) (eq $cReact true) (or (and (eq $linked true) (eq $linkCompare true)) (eq $attached true))}}
+        {{$phEmbed := sendMessageRetID nil (complexMessage "embed" (sdict "title" "" "description" "" "footer" (sdict "text" "You can only pick one option" "icon_url" ($.Message.Author.AvatarURL "256"))) "reply" $.Message.ID)}}
+        {{$votes := ""}}
+        {{if $linkCompare}}
+            {{$votes = slice .Args 2}}
+        {{else}}
+            {{$votes = slice .Args 1}}
+        {{end}}
+        {{range $index, $vote := $votes}}
+        {{$r := (index $cEmojis $index)}}
+        {{$message = (print $message $r " - " $vote "\n")}}
+        {{editMessage nil $phEmbed (complexMessageEdit "embed" (sdict "title" (print "❯  **Comparison by: **" $.Message.Author.Username) "description" $message "footer" (sdict "text" "You can only pick one option" "icon_url" ($.Message.Author.AvatarURL "256"))))}}
+        {{addMessageReactions nil $phEmbed $r}}
+        {{end}}
+        {{addMessageReactions nil $phEmbed "pass:994783627995005078"}}
+{{ $newXp := dbIncr .User.ID "xp" 60}} 
+    {{else if (and (not $blacklist) ($cReact))}}
+        {{$template := execTemplate "sendError" .User.Username}}   
+    {{end}}
+
+{{/*Add Default Reactions*/}}
+{{if (and (eq $sReact true) (eq $cReact false) (not $blacklist))}}
+{{sleep 1}}
+{{range $sEmojis}}
+{{addReactions .}}
+{{end}}{{end}}{{end}} 

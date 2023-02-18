@@ -1,0 +1,16 @@
+{{$regex := "[^#-z |]"}}
+
+{{$n := .User.Username}}{{$t := "Username"}}
+{{if .Member.Nick}}
+{{$n = .Member.Nick}}{{$t = "Nickname"}}
+{{end}}
+
+{{if (reFind $regex $n)}}
+{{$new := reReplace (joinStr "" $regex "*") $n ``}}
+{{if $new}}{{sendDM (joinStr "" "Your nickname has been changed to " $new " from: " $n " please don't use special characters.")}}{{editNickname $new}}
+{{else}}
+
+{{sendDM (joinStr "" "Your nickname has been changed to Unpingable " $t " from: " $n " please don't use special characters.")}}
+{{editNickname (joinStr " " "Unpingable" $t)}}
+{{end}}
+{{end}}

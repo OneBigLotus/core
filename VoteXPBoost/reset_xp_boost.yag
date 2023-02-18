@@ -1,0 +1,3 @@
+{{dbSet .Channel.ID "current_channel_list" (sdict "1️⃣" 782163222971023370 "2️⃣" 782163222971023370 "3️⃣" 782163222971023370)}}
+{{dbSet .Channel.ID "current_channel_boost" (str 782163222971023370)}}
+{{dbSet 0 "XP-Name-Cache" "yiff-straight"}} 

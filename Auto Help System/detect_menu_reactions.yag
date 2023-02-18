@@ -1,0 +1,57 @@
+{{/*Get the values for the current server XP*/}}
+{{$settings := 0}}
+{{ with (dbGet 0 "xpSettings") }} {{ $settings = sdict .Value }} {{ end }} {{/* If in db, then we update value */}}
+{{/*verify correct message and reaction*/}}
+{{if .Message.Embeds}}
+{{if and (inFold (cslice "1️⃣" "2️⃣" "3️⃣" "4️⃣" "5️⃣" "6️⃣" "7️⃣" ) .Reaction.Emoji.Name) (eq .Message.Author.ID 204255221017214977) (inFold (index .Message.Embeds 0).Title "Yiffhub Help")}}
+	{{if eq .Reaction.Emoji.Name "1️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "1️⃣ Free Animated Emojis" "description" "YiffHub features **Not-Quite-Nitro**, a magnificent bot that **enables animated emojis for everyone**. For a list of our available emojis use /tutorial")}}
+{{else if eq .Reaction.Emoji.Name "2️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "2️⃣ Yiff-Of-The-Week" "description" `
+	Yiff Of The Week is a system that logs the
+	hottest posts from<#911635028486791168> for the week.
+ 
+	For your post to make the board 
+	it must earn 25 or more "Smashes" and less than 15 "Passes"
+ 
+	For a more detailed guide on how to use Smash or Pass
+	type -help in any of the Smash or Pass channels`)}}
+{{else if eq .Reaction.Emoji.Name "3️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "3️⃣ Member Roleplay Quickstart" "description" 
+	`The Roleplaying channel is reserved for members who have DM's open.
+	🚫 ROLEPLAY IS NOT SEXTING. 🚫
+ 
+	You are expected to bring a character so get creative!
+	No Roleplay sessions are permitted on the server, 
+ 	The RP channel is intended to help match you up with a suitable partner.
+	Requests are saved on channel for one week, then they are cleared to keep the channel fresh. 
+ 	Rape, Killing, Gore, Scat and Bestiality are banned topics that cannot be requested on the server.
+ 
+	*These rules are enforced.*
+	Remember to get creative. Bring a character refsheet and optionally provide an image.
+	Have a setting, and a list of allowed kinks, but most importantly have fun!`)}}
+{{else if eq .Reaction.Emoji.Name "4️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "4️⃣ Member Preferences" "description" 
+	`Preferences can be adjusted in <#875920875910733834>.
+	 Settings are viewable in <#981664942493163530>.
+	 Rankup Pings can be enabled/disabled in <#876357678274838538>`)}}
+{{else if eq .Reaction.Emoji.Name "5️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "5️⃣ Server XP" "description" (printf
+	"Server XP is gained by being active on the server.\nChat messages: %d\nImage Posts: %d\n and all posts in <#1002071014966034553> (This is the current XP bonus channel)" $settings.min $settings.max))}}
+{{else if eq .Reaction.Emoji.Name "6️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "6️⃣ Competition Details" "description" 
+    `**This is not yet implemented yet. 
+    Just know you will need to be at least 
+    Casual rank to participate so start gaining XP**`)}}
+{{else if eq .Reaction.Emoji.Name "7️⃣"}}
+	{{sendDM (cembed "color" 13395660 "title" "7️⃣ Staff Applications" "description" 
+    `Staff Applications are opened manually by Moderation when the need arises.
+     
+     Terms will be given in the form of an announcement.`)}}
+{{end}}
+	{{deleteMessageReaction nil .Reaction.MessageID .Reaction.UserID .Reaction.Emoji.Name}}
+    {{if eq .Message.ReferencedMessage.Author.ID .User.ID}}
+    {{deleteMessage nil .Message.ID 10}}
+        {{end}}
+    {{end}} 
+{{end}} 

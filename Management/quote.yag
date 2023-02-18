@@ -1,0 +1,13 @@
+{{$suggestChannel := 947781038002802718}}
+{{$message := 0}}{{deleteResponse 3}}{{$args := parseArgs 1 "" (carg "int" "message-id") (carg "string" "any extra comments")}}
+{{$message = getMessage nil ($args.Get 0)}}
+{{if eq $message.ChannelID $suggestChannel}}
+    {{print $message.Embeds}} 
+    {{$embed := cembed "author" (sdict "name" (index $message.Embeds 0).Author.Name "icon_url" "icon_url" ((userArg (slice (index $message.Embeds 0).Footer.Text 11)).AvatarURL "512")) "description" (joinStr "" "[Message Link](https://discordapp.com/channels/" .Guild.ID "/" $message.ChannelID "/" $message.ID ") \n" (index $message.Embeds 0).Description) "footer" (sdict "text" (joinStr "" "This message was quoted by: " .User.String " | " .User.ID) "icon_url" (.User.AvatarURL "512"))}}
+    {{sendMessage nil $embed}}
+{{else if $message}}
+    {{$embed := cembed "author" (sdict "name" $message.Author.Username) "icon_url" ($message.Author.AvatarURL "512") "description" (joinStr "" "[Message Link](https://discordapp.com/channels/" .Guild.ID "/" $message.ChannelID "/" $message.ID ") \n" $message.Content) "footer" (sdict "text" (joinStr "" "This message was quoted by: " .User.String " | " .User.ID) "icon_url" (.User.AvatarURL "512"))}}
+    {{sendMessage nil $embed}}
+{{else}}
+    Message not found, make sure you have the right message ID.
+{{end}} 

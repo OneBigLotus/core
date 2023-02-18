@@ -1,0 +1,29 @@
+{{$noPingRole := 966962287128752138}}
+{{$pingRole := 990933983787372574}}
+{{$pingOff := "🔕"}}
+{{$pingOn := "🔔"}}
+{{with .Reaction}}
+    {{if eq .Emoji.Name $pingOff}}
+        {{if not (hasRoleID $noPingRole)}}
+	    {{removeRoleID $pingRole}}
+            {{addRoleID $noPingRole}}
+            **Pings Are Now Disabled.**
+            {{deleteResponse 3}}
+        {{else}}
+        **You Already Have Pings Disabled.**
+         {{deleteResponse 3}}
+        {{end}}
+    
+{{else if (eq .Emoji.Name $pingOn)}}
+    {{if (hasRoleID $noPingRole)}}
+        {{removeRoleID $noPingRole}}
+	{{addRoleID $pingRole}}
+        **Pings Are Now Enabled**
+        {{deleteResponse 3}}
+    {{else}}
+    **You Do Not Have Pings Disabled.**
+     {{deleteResponse 3}}
+    {{end}}
+{{end}}
+{{deleteMessageReaction nil $.Message.ID $.User.ID $pingOff $pingOn}}
+{{end}} 

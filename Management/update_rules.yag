@@ -1,0 +1,36 @@
+{{$msg := 957759198970658826}}
+{{ $embed := cembed 
+"title" "*YiffHub Community Rules*" 
+"description" (print "@everyone\n " "These rules are in addition to Discord's \n[Terms of Service](https://discord.com/terms) and [Community Guidelines](https://discord.com/guidelines).\n\n\n**__The Rules:__**") 
+"url" "https://discord.com/channels/750011300905746524/750011300905746527"
+"color" 15242434
+    "footer" 
+    (sdict
+           "text" "All New Members Have Direct Message Disabled."
+    )
+    "thumbnail" 
+    (sdict
+      "url" "https://i.redd.it/0vgvym6kd6c81.jpg"
+    )
+    "author" 
+    (sdict
+      "name" "YiffHub Administration"
+      "icon_url" "https://i.redd.it/0vgvym6kd6c81.jpg"
+    )
+    "fields" (cslice
+        (sdict "name" "1: Age Restriction" "value" "\n__NO UNDERAGE MEMBERS.__\n\nAny Underaged Members Will Be Banned With Neither Pardon Or Exception.\n\n")
+        (sdict "name" "2: Self Promotion" "value" "\n*Advertising is allowed in <#782183394246918186> and is limited to certain Discord Communities, Personal Art, Commision Requests, VA Demo Reels or Personal work, and Sexual Content **provided it is hosted on a verified model account outside of discord**.*\n\n**Exclusions:**\nNude sellers, Seller servers, Bot servers, Leak servers, Crypto/NFT/Gambling servers, E-dating servers, and any servers that promote otherwise illegal activity or do not restrict pornagraphic content.\n\n")
+        (sdict "name" "3: Self Bots" "value" "No self or user bots - These are in some cases against Discord's [Terms of Service](https://discord.com/terms). \nIf you need a bot for something use one of the bots already in the server.\n\n")
+        (sdict "name" "4: Restricted Content" "value" "***No Gore.*** This includes mutilation, necro, zoo, hard vore or death \n(Soft vore is permitted in channels under the Fetish-Content category).\n**No Lolicon or Cub.** No pornagraphic art or media portraying any character as underage is permitted on the server.\n")
+        (sdict "name" "5: Moderation" "value" "\"Minimodding\" is frowned upon. Please treat fellow members with respect. Alert staff to such issues so they can be resolved accordingly. Offending users should be reported in \n<#947686470821482579>.\n\n")
+        (sdict "name" "6: Member Aggression" "value" "No harassment, sexism or targetted racism. No sexual harassment or encouraging of harassment.\nRaid organization and participation in raids will result in moderation.\n\n")
+        (sdict "name" "7: Language" "value" "This Server is English Only\n\n")
+        (sdict "name" "8: Stay Organized" "value" "Keep content in their respective channels. This makes content more easily accessible.\n\n[__Channel Organization Cheat Sheet:__](https://discord.com/channels/750011300905746524/892883975528390666)\n\n")
+        (sdict "name" "9: Chatroom Interaction" "value" "Please refrain from political discussion in chat, from posting image, audio, or mention spam.\n\n")
+        (sdict "name" "10: RolePlay" "value" "RolePlay is not currently allowed on YiffHub. If you wish to find an RP partner to directly message, submit a request in <#962605517916758046>\n\n__You Must Enable Direct Messages In <#875920875910733834> To Access The RolePlay Channel.__\n") 
+        (sdict "name" "11: Direct Messaging" "value" "Do not Direct Message Without Permission.\n\nFor Users With The Following Roles:\n")
+        (sdict "name" "🔴DMsClosed:" "value" "**Do Not Direct Message**" "inline" true)
+        (sdict "name" "🟢DMsOpen:" "value" "**You May Direct Message**" "inline" true)
+)}}
+
+{{ sendMessage nil $embed }} 

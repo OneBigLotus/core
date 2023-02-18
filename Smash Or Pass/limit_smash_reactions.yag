@@ -1,0 +1,45 @@
+{{$remove := false}}
+{{$compareWhitelist := cslice "🤍" "🤎" "💚" "💛" "💙" "❤️" "🖤" "💚" "💜" "🧡" "pass:994783627995005078"}}
+{{$smashWhitelist := cslice "smash:994783560663830549" "pass:994783627995005078"}}
+{{$whitelist := false}}
+ 
+{{if .ExecData}}
+    {{$c := (index .ExecData 1)}}
+    {{$whitelist = $c}}
+    {{$remove = true}}
+{{else}}
+{{if (and (.Message.Embeds) (eq .Message.Author.ID 204255221017214977))}}
+    {{$whitelist = $compareWhitelist}}
+    {{if (in $whitelist .Reaction.Emoji.APIName)}}
+    {{$remove = true}}
+    {{end}}
+{{else if (and (ne .Message.Author.ID 204255221017214977) (or .Message.Attachments .Message.Embeds))}}
+    {{$whitelist = $smashWhitelist}}
+    {{if (in $whitelist .Reaction.Emoji.APIName)}}
+    {{$remove = true}}
+    {{end}}
+    {{end}}
+{{end}}
+ 
+{{if eq $remove true}}
+    {{if .ExecData}}
+        {{$a := (index .ExecData 0)}}
+        {{$b := (index .ExecData 1)}}
+	    {{$c := 0}}
+        {{range .Message.Reactions}}
+		{{- if le $c 10}}
+                    {{- if (ne $a.Emoji.Name .Emoji.Name)}}
+                        {{if in $b .Emoji.APIName}}
+                        {{if .Me}}
+                        {{- deleteMessageReaction nil $.Message.ID $.User.ID .Emoji.APIName}}
+			{{- $c = add 1 $c}}
+                        {{end}}
+                    {{- end}}
+                {{- end}}
+         {{end}}
+	{{end}}
+    {{else}}
+    {{cancelScheduledUniqueCC $.CCID (print "removal" $.User.ID .Message.ID)}}
+    {{scheduleUniqueCC .CCID nil 10 (print "removal" .User.ID .Message.ID) (cslice .Reaction $whitelist)}}
+    {{end}}
+{{end}} 

@@ -1,0 +1,7 @@
+{{$memberChannel := 893559906186174504}}
+
+{{$onlineChannel := 1011824842724610188}}
+
+{{editChannelName $memberChannel (joinStr "" "members-" .Guild.MemberCount)}}
+
+{{editChannelName $onlineChannel (joinStr "" "online-" onlineCount)}} 

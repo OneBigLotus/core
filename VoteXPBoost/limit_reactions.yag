@@ -1,0 +1,30 @@
+{{$remove := false}}
+{{$whitelist := cslice `1️⃣` `2️⃣` `3️⃣`}}
+{{/* Capture input emoji from previous reaction to preserve */}}
+
+{{if .ExecData}}
+    {{$remove = true}} 
+{{end}}
+
+{{if in $whitelist .Reaction.Emoji.APIName}}
+    {{$remove = true}}
+{{end}}
+ 
+{{if eq $remove true}}
+    {{if .ExecData}}
+        {{$a:= .ExecData}}
+	    {{$count := 0}}
+        {{range .Message.Reactions}}
+		    {{- if le $count (len $whitelist)}}
+                    {{- if (ne $a .Emoji.APIName)}}
+                        {{- deleteMessageReaction nil $.Message.ID $.User.ID .Emoji.APIName}}
+		    {{- $count = add 1 $count}}
+                    {{- end}}
+                {{- end}}
+            {{- end}}     
+    {{- else}}
+    {{cancelScheduledUniqueCC $.CCID (print "removal" $.User.ID .Message.ID)}}
+    {{scheduleUniqueCC $.CCID nil 7 (print "removal" .User.ID .Message.ID) .Reaction.Emoji.APIName}}
+        {{end}}
+    {{end}}
+ 

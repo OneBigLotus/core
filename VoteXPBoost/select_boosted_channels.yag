@@ -1,0 +1,78 @@
+          {{$boosted_channel:= (dbGet .Channel.ID "current_channel_boost").Value}}
+          {{$allowed_categories := (cslice 782164230161170442 782165292520439839 782162810750763019 782180483202809876)}}
+          {{$allowed_channels:=cslice}}
+          {{$channels_to_vote:=cslice}}
+          {{$voted_channels:= sdict (dbGet .Channel.ID "current_channel_list").Value}}
+          {{$channel_cache:=sdict}}
+          {{$name_cache:= (dbGet 0 "XP-Name-Cache")}}
+          {{/* To reset the channel name to its original value */}}
+          {{$list:=cslice}}
+          {{$voting_emoji := cslice "1️⃣" "2️⃣"  "3️⃣"}}
+          {{$msg := 1071121348358832188}}
+          {{$general := 750011300905746527}}
+          {{$role_to_ping := 990933983787372574}}
+          {{$top := sdict "Count" 0}}
+
+
+          {{/* First we need to revert the name of the old XPBonus Channel */}}
+          {{editChannelName (toInt $boosted_channel) (str $name_cache)}}
+
+          {{/* Next step is to set the channel based on existing votes */}}
+          {{/*/We return the highest voted reaction as $top*/}}
+            {{- range (getMessage nil $msg).Reactions -}}
+              {{- if gt .Count $top.Count -}}
+                {{- $top = . -}}
+            {{- end -}}
+          {{- end -}}
+
+          {{/* Change the channel with XPBoost to the saved channel */}}
+          {{$new_boosted_channel := $voted_channels.Get $top.Emoji.Name}}
+          {{$boosted_channel:=dbSet .Channel.ID "current_channel_boost" (str $new_boosted_channel)}}
+
+          {{/* This ranges through all of the channels in the NSFW categories and returns a slice of all of the channel IDs not including the current channel ID*/}}
+          {{- range .Guild.Channels -}}
+                {{- if and (ne .Type 4) (in $allowed_categories .ParentID) (ne (toInt $boosted_channel) .ID) -}}
+                  {{- $allowed_channels = $allowed_channels.Append .ID -}}
+                  {{- end -}}
+              {{- end -}}
+          
+          {{/*Now we want to make sure that the current boosted channel is not in the new list of three channels */}}
+          {{- $list = shuffle $allowed_channels}}
+          {{- $channels_to_vote = cslice (index $list 0) (index $list 1) (index $list 2)}}
+          {{- $channel_cache = sdict (index $voting_emoji 0) (index $channels_to_vote 0) (index $voting_emoji 1) (index $channels_to_vote 1) (index $voting_emoji 2) (index $channels_to_vote 2) }} {{/* Now we assign the reaction emojis to a saved DB entry. when the command runs next it will count the reactions*/}}
+          
+          {{/* Save to the channel database the three automated channel choices */}}
+          {{dbSet .Channel.ID "current_channel_list" $channel_cache}}
+
+          {{/* Make the server icon accessible for use in embeds */}}
+          {{$ex := or (and (reFind "a_" .Guild.Icon) "gif" ) "png" }}
+          {{$icon := print "https://cdn.discordapp.com/icons/" .Guild.ID "/" .Guild.Icon "." $ex "?size=1024" }}
+
+          {{/* Set up an embed to use with complexMessageEdit */}}
+          {{$embed:= cembed
+          "title" "Vote For Next Week's Bonus XP Channel:"
+          "description" (print (index $voting_emoji 0) ": <#" (index $channels_to_vote 0) ">\n" (index $voting_emoji 1) ": <#" (index $channels_to_vote 1) ">\n" (index $voting_emoji 1) ": <#" (index $channels_to_vote 2) ">")
+          "color" 6831561
+          "footer" 
+          (sdict 
+            "icon_url" $icon
+            "text" "Results are calculated weekly!\nBoosted channels marked with ✨")
+            "author" 
+          (sdict 
+            "name" "YiffManager" 
+            "icon_url" $icon)
+          }}
+
+        {{/* Update the message to include the new channels and regenerate all reactions */}}
+        {{editMessage nil $msg (complexMessageEdit "content" "" "embed" $embed)}}
+        {{deleteAllMessageReactions nil $msg}}
+        {{addMessageReactions nil $msg $voting_emoji}}
+
+        {{/* Execute the setbonus command */}}
+        {{dbSet 0 "XP-Bonus" (str $new_boosted_channel)}}
+
+        {{/* Change the boosted channel's name to the new boosted channel */}}
+        {{editChannelName (toInt $new_boosted_channel) (print "✨" (getChannel (toInt $new_boosted_channel)).Name)}}
+        
+        {{/* Send the update message in #general */}}
+        {{sendMessageNoEscape $general (print "<@&" $role_to_ping ">: <#" $new_boosted_channel "> now has XPBonus! Earn 2x XP until the end of the week!")}} 

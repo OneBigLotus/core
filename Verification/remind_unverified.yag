@@ -1,0 +1,2 @@
+{{$msg := sendMessageRetID nil (println  "<@&910350039015116811> Finish Your Verification Here")}}
+{{deleteMessage nil $msg}} 

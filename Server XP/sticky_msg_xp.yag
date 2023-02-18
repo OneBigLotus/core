@@ -1,0 +1,16 @@
+
+{{$message := cembed "title" "Disable XP Messages" "description" "React to this message to disable/enable future pings. Changes are saved internally." "color" 0xF47FFF}}
+
+{{if $db := dbGet .Channel.ID "stickymessage"}}
+
+	{{deleteMessage nil (toInt $db.Value) 0}}
+
+{{end}}
+
+{{sleep 5}}
+
+{{$id := sendMessageRetID nil $message}}
+
+{{addMessageReactions nil $id "🔕" "🔔"}}
+
+{{dbSet .Channel.ID "stickymessage" (str $id)}} 

@@ -1,0 +1,18 @@
+{{$dEmoji := `🔔`}}
+{{$dMsg := 962804280954339358}}
+{{$dmDisabled := 929501262649634926}}
+{{$dmEnabled := 929501054586986538}}
+{{$dmOpenDM := "You have successfully set your DMStatus to `OPEN`. Members are now allowed to send you messages."}}
+{{$dmCloseDM := "You have successfully set your DMStatus to `CLOSED`. Members are no longer allowed to send you messages."}}
+
+{{if and (eq .Reaction.Emoji.APIName $dEmoji) (eq (toInt .Message.ID) $dMsg) (not (hasRoleID $dmEnabled))}}
+    {{deleteMessageReaction nil .Message.ID .User.ID .Reaction.Emoji.APIName}}
+    {{sendDM $dmOpenDM}}
+    {{addRoleID $dmEnabled}}
+    {{removeRoleID $dmDisabled}}
+{{else}}
+    {{sendDM $dmCloseDM}}
+    {{addRoleID $dmDisabled}}
+    {{removeRoleID $dmEnabled}}
+{{end}}
+{{deleteMessageReaction nil $dMsg .User.ID .Reaction.Emoji.APIName}}

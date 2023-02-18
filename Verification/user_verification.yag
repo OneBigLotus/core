@@ -1,0 +1,13 @@
+ {{$emoji := `✅`}}
+{{$msg := 1032936471365177414}}
+{{$verified := 839046725951553576}}
+{{$unverified := 910350039015116811}}
+{{$verifyDM := "Thanks for verifying! \nDirect messages from YiffHub members have automatically been set to Closed.  \nDM, Notifications and Occupational roles can be modified in <#875920875910733834>" }}
+{{if and (eq .Reaction.Emoji.APIName $emoji) (eq (toInt .Message.ID) $msg) (not (hasRoleID $verified))}}
+    {{deleteMessageReaction nil .Message.ID .User.ID .Reaction.Emoji.APIName}}
+    {{sendDM $verifyDM}}
+    {{addRoleID $verified}}
+    {{removeRoleID $unverified}}
+{{else}}
+    {{deleteMessageReaction nil $msg .User.ID .Reaction.Emoji.APIName}}
+{{end}}

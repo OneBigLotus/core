@@ -1,0 +1,16 @@
+{{$x := sendMessageRetID nil (complexMessage "embed" (sdict "title" "YiffHub Help" "description" 
+(print (print (or .Member.Nick .User.Username) " Used `-help`") `
+
+All Categories:
+1️⃣ Free Animated Emojis With NQN 
+2️⃣ Yiff Of The Week
+3️⃣ Member RolePlay 
+4️⃣ Member Preferences
+5️⃣ Server XP
+6️⃣ Competitions
+7️⃣ Apply For Staff` 
+
+)) "reply" .Message.ID)
+}}
+
+{{addMessageReactions nil $x "1️⃣" "2️⃣" "3️⃣" "4️⃣" "5️⃣" "6️⃣" "7️⃣"}} 
